@@ -1,0 +1,87 @@
+This repository extends the official C++ implementation of [CFIRSTNET: Comprehensive Features for Static IR Drop Estimation with Neural Network](https://github.com/jason122490/CFIRSTNET). The original "Comprehensive Features" proposed in the paper have been modified to support not only Nangate45 but also **sky130hd**, **asap7**, and **custom design data**. We express our gratitude to the original authors for sharing their excellent research.
+
+## Overview
+This project enhances the CFIRSTNET implementation to support IR Drop Estimation across multiple process technologies and custom designs. Key modifications include:
+- Added support for sky130hd and asap7 process presets
+- Custom metal layer and orientation configuration
+- Automatic orientation detection
+- Optimized channel configuration (M=3, generating 11 channels)
+
+**Note**: The code was modified with assistance from ChatGPT 5 Pro and compared with the original implementation using `vis.ipynb`. Please be aware that unexpected errors may occur, and caution is advised.
+
+## License
+This project adheres to the **Apache License 2.0**, as specified in the original [CFIRSTNET repository](https://github.com/jason122490/CFIRSTNET). See the [LICENSE file](https://github.com/jason122490/CFIRSTNET/blob/main/LICENSE) for details.  
+**Note**: The modified code also follows the Apache License 2.0, allowing commercial use, provided the license conditions are met.
+
+## Dependencies
+- **Compiler**: g++-11 or later (with C++17 support)
+- **Library**: Boost (specifically `boost_iostreams`)
+- **Operating System**: Linux (Ubuntu 20.04 or later recommended)
+- **Optional**: `libstdc++fs` (required in some environments)
+
+### Installing Dependencies
+To install Boost on Ubuntu, run:
+```bash
+sudo apt update
+sudo apt install libboost-all-dev
+```
+
+## Build Instructions
+Build the project on Linux using the following command:
+```bash
+g++ -O3 -std=c++17 -Wall -Wextra -pedantic main.cpp -o irdump -lboost_iostreams
+```
+
+### Troubleshooting Build Errors
+If you encounter filesystem-related errors, try:
+```bash
+g++ -O3 -std=c++17 -Wall -Wextra -pedantic main.cpp -o irdump -lboost_iostreams -lstdc++fs
+```
+**Known Issues**:
+- Ensure `libstdc++fs` is available if filesystem errors occur (check g++ version).
+- Verify that Boost is properly installed (see installation instructions above).
+
+## Usage
+Run the program with the following example command:
+```bash
+./irdump /your_sp_path/sample.sp 384 384 --out-dir ./dump
+```
+
+### Presets and Options
+- **sky130 Preset**: Uses metal layers `met1`, `met4`, `met5` (V, H, V) and saves channel data to CSV
+  ```bash
+  ./irdump /path/to/file.sp 384 384 --preset sky130 --out-dir ./dump
+  ```
+- **asap7 Preset**: Uses metal layers `m5`, `m8`, `m9`, `m10` (H, V, H, V) with automatic orientation detection
+  ```bash
+  ./irdump /path/to/asap7.sp.gz 384 384 --preset asap7 --auto-ori --print-ori
+  ```
+- **nangate45 Preset**: Uses metal layers `m1`, `m4`, `m7`, `m8`, `m9` (V, H, V, H, V)
+  ```bash
+  ./irdump /path/to/n45.sp.gz 256 256 --preset nangate45
+  ```
+- **Custom Configuration**: Specify custom metal layers and orientations (H/V or 2/1)
+  ```bash
+  ./irdump my.sp 512 512 --preset custom --metals m1,m3,m5 --ori V,H,V --out-dir ./dump --print-ori
+  
+### Channel Configuration
+
+- **sky130**: M=3 (Total 11 channels)
+  - 0–4: Hypothetical IR Drop (HIRD, 5 channels)
+  - 5–7: Resistive Distance (RD, 3 channels)
+  - 8–10: Wire Resistance (WR, 3 channels)
+- **nangate45, asap7**: M=5 (Total 23 channels)
+  - 0–8: Hypothetical IR Drop (HIRD, 9 channels)
+  - 9–15: Resistive Distance (RD, 7 channels)
+  - 16–22: Wire Resistance (WR, 7 channels)
+
+## Usage Tips
+- **Automatic Orientation Detection**: Use the `--auto-ori` flag to automatically detect metal layer orientations.
+- **Orientation Output**: Add `--print-ori` to display the orientation settings.
+- **Output Directory**: Results are saved to the directory specified by `--out-dir`.
+- **Comparison Analysis**: Refer to `vis.ipynb` to compare the original and modified implementations.
+
+## Notes
+- While the modified code has been tested, unexpected errors may occur in certain environments. Please report any issues.
+- Ensure input files (e.g., `.sp`, `.sp.gz`) are correctly formatted.
+- For details on the `.sp` file format and content, please refer to the BeGAN paper or the ICCAD-2023 contest C invitation paper.
